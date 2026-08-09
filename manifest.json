@@ -1,0 +1,19 @@
+{
+  "name": "UQTxNova — Mission Control",
+  "short_name": "UQTxNova",
+  "description": "Premium study productivity dashboard — revision planner, syllabus tracker, pomodoro, notes and analytics.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090D17",
+  "theme_color": "#090D17",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "favicon-16x16.png", "sizes": "16x16", "type": "image/png", "purpose": "any" },
+    { "src": "favicon-32x32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" },
+    { "src": "favicon-48x48.png", "sizes": "48x48", "type": "image/png", "purpose": "any" },
+    { "src": "favicon-64x64.png", "sizes": "64x64", "type": "image/png", "purpose": "any" },
+    { "src": "favicon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
