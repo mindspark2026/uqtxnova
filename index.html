@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UQTxNova | Mission Control</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64x64.png">
+<link rel="icon" type="image/png" sizes="128x128" href="favicon-128x128.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="UQTxNova">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#090D17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= TOPBAR ================= -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <img src="logo-mark.png" alt="UQTxNova" class="brand-logo">
+      </div>
+      <span class="brand-word">UQTx<b>Nova</b></span>
+    </div>
+
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="globalSearch" type="text" placeholder="Search tasks, chapters, notes…">
+      <span class="kbd-hint">/</span>
+    </div>
+
+    <div class="topbar-right">
+      <span class="date-chip" id="topbarDate"></span>
+      <div class="sync-pill" id="syncPill"><span class="sync-dot"></span><span class="label">Synced</span></div>
+      <button class="icon-btn" data-tip="Notifications" onclick="App.setPage('revision')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="dot" id="notifDot" style="display:none;"></span>
+      </button>
+      <button class="icon-btn" data-tip="Toggle theme" onclick="AppSettings.toggleTheme()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+      <button class="icon-btn" data-tip="Settings" onclick="App.setPage('settings')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.14.3.22.63.22.97"/></svg>
+      </button>
+
+      <button class="signin-btn" id="signinBtn" onclick="Auth.openAuthModal()">Sign In</button>
+      <div class="who" id="whoBox" style="display:none;" onclick="Auth.signOut()" data-tip="Sign out">
+        <div class="avatar" id="whoAvatar">G</div>
+        <div class="meta"><div class="name" id="whoName">Guest</div><div class="lvl">Tap to sign out</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REMINDER ================= -->
+  <div id="reminderBar">
+    <div class="reminder-inner">
+      <div class="reminder-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C5CFF" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <div class="reminder-text" id="reminderText"></div>
+      <div class="reminder-actions">
+        <button class="reminder-btn" onclick="App.gotoRevisionFromReminder()">Review Now</button>
+        <button class="reminder-dismiss" onclick="App.dismissReminder()">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ================= PAGE NAV ================= -->
+    <div class="page-nav" id="pageNav">
+      <button class="page-tab active" data-page="dashboard"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Mission Control</button>
+      <button class="page-tab" data-page="calendar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendar</button>
+      <button class="page-tab" data-page="revision"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Revision</button>
+      <button class="page-tab" data-page="syllabus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg>Syllabus</button>
+      <button class="page-tab" data-page="pomodoro"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Pomodoro</button>
+      <button class="page-tab" data-page="notes"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Notes</button>
+      <button class="page-tab" data-page="goals"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Goals</button>
+      <button class="page-tab" data-page="gamification"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14 2 9.5h7.5z"/></svg>Progress</button>
+      <button class="page-tab" data-page="settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>Settings</button>
+    </div>
+
+    <!-- ================= DASHBOARD ================= -->
+    <div class="page-view" id="page-dashboard">
+      <div class="head-row">
+        <div>
+          <h1 id="greetText">Good morning</h1>
+          <div class="date-line"><span class="t" id="dateStr">—</span><span id="timeStr">—</span></div>
+          <div class="quote-line" id="quoteText"></div>
+        </div>
+        <div class="range-tabs" id="rangeTabs">
+          <button class="active" data-range="today">TODAY</button>
+          <button data-range="week">WEEK</button>
+          <button data-range="month">MONTH</button>
+          <button data-range="year">YEAR</button>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-card"><p class="stat-label">Study Hours</p><p class="stat-num" id="statGross">0 min</p></div>
+        <div class="stat-card blue"><p class="stat-label">Problems Solved</p><p class="stat-num" id="statProbPeriod">0</p></div>
+        <div class="stat-card green"><p class="stat-label">Focus Score</p><p class="stat-num" id="statFocus">0%</p></div>
+        <div class="stat-card amber"><p class="stat-label">Revision Due</p><p class="stat-num" id="statRevDue">0</p></div>
+        <div class="stat-card red"><p class="stat-label">Tasks Done</p><p class="stat-num" id="statTasksDone">0/0</p></div>
+      </div>
+
+      <div class="grid">
+        <div class="col">
+          <div class="panel" id="todaySchedulePanel">
+            <div class="panel-head"><p class="panel-title">Today's Schedule</p><p class="panel-sub">Plan it, or log it as done — one form does both</p></div>
+            <form id="todayForm">
+              <div class="field" style="margin-bottom:10px;"><label>Description</label><input id="todayTitle" type="text" placeholder="e.g. Rotational Motion — numericals" required></div>
+              <div class="field-row" style="margin-bottom:10px;">
+                <div class="field"><label>Subject</label>
+                  <select id="todaySubject"><option>Physics</option><option>Chemistry</option><option>Maths</option><option>General</option></select>
+                </div>
+                <div class="field"><label>Type</label>
+                  <div class="type-dropdown" id="todayTypeDropdown">
+                    <button type="button" class="type-dropdown-trigger" onclick="App.toggleTypeDropdown('todayTypeDropdown')">
+                      <span class="type-dropdown-value" id="todayTypeValue">Select type</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="type-dropdown-panel">
+                      <label class="type-dropdown-opt"><span class="type-opt-label">Lecture</span><input type="checkbox" class="type-opt-input" data-type="Lecture" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                      <label class="type-dropdown-opt"><span class="type-opt-label">Module</span><input type="checkbox" class="type-opt-input" data-type="Module" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                      <label class="type-dropdown-opt"><span class="type-opt-label">DPP</span><input type="checkbox" class="type-opt-input" data-type="DPP" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                      <label class="type-dropdown-opt"><span class="type-opt-label">Revision</span><input type="checkbox" class="type-opt-input" data-type="Revision" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                      <label class="type-dropdown-opt"><span class="type-opt-label">PYQ</span><input type="checkbox" class="type-opt-input" data-type="PYQ" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                      <label class="type-dropdown-opt"><span class="type-opt-label">HW</span><input type="checkbox" class="type-opt-input" data-type="HW" onchange="App.onTypeOptionChange('todayTypeDropdown')"><span class="type-opt-tick"></span></label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field-row" style="margin-bottom:10px;">
+                <div class="field"><label>Duration</label>
+                  <div class="duration-input">
+                    <input id="todayDurationHrs" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Hours"><span class="duration-unit">hr</span>
+                    <input id="todayDurationMins" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Minutes"><span class="duration-unit">min</span>
+                  </div>
+                  <div class="field-hint">Leave both blank to plan for later</div>
+                </div>
+                <div class="field"><label>Problems Solved</label><input id="todayProblems" type="number" min="0" placeholder="0"></div>
+              </div>
+              <div class="field-row" style="margin-bottom:10px;">
+                <div class="field"><label>Priority</label>
+                  <select id="todayPriority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select>
+                </div>
+              </div>
+              <button class="btn-submit" type="submit">Add to Today</button>
+            </form>
+            <div class="queue-list" id="taskList" style="margin-top:14px;"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div><p class="panel-title">XP &amp; Streak</p></div>
+            </div>
+            <div class="xp-bar-wrap">
+              <div class="xp-ring">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+                  <circle id="xpRingFill" cx="26" cy="26" r="22" fill="none" stroke="#7C5CFF" stroke-width="4" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+                </svg>
+                <div class="lvl-num" id="lvlNum">1</div>
+              </div>
+              <div>
+                <div class="streak-flame">🔥 <span id="streakNum">0</span></div>
+                <div class="q-meta" id="xpText">0/200 XP</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="panel">
+            <div class="panel-head">
+              <div><p class="panel-title">Study Distribution</p><p class="panel-sub" id="donutTotal">Selected range</p></div>
+            </div>
+            <div class="dist-chart-row">
+              <div class="dist-chart-canvas-wrap"><canvas id="distChart"></canvas></div>
+              <div id="distLegend" class="dist-legend"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Weekly Performance</p></div>
+            <div style="height:180px;"><canvas id="waveChart"></canvas></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Monthly Performance</p></div>
+            <div style="height:170px;"><canvas id="monthChart"></canvas></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <p class="panel-title">Objectives</p>
+              <div class="queue-tabs" id="queueTabs">
+                <button class="q-tab active" data-view="today" onclick="App.setQueueView('today')">Today</button>
+                <button class="q-tab" data-view="past" onclick="App.setQueueView('past')">Past</button>
+              </div>
+              <button class="pill-btn" id="queueClearBtn" onclick="App.clearQueue()">Clear</button>
+            </div>
+            <div class="queue-list" id="queueList"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-dashboard -->
+
+    <!-- ================= CALENDAR ================= -->
+    <div class="page-view" id="page-calendar" style="display:none;">
+      <div class="head-row"><h1>Calendar</h1></div>
+      <div class="grid cal-page-grid">
+        <div class="panel">
+          <div class="cal-head">
+            <div class="cal-title" id="calTitle">—</div>
+            <div class="cal-nav">
+              <button class="pill-btn" onclick="Calendar.prevMonth()">‹</button>
+              <button class="pill-btn" onclick="Calendar.goToday()">Today</button>
+              <button class="pill-btn" onclick="Calendar.nextMonth()">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="panel" id="calDetail"></div>
+      </div>
+    </div><!-- /page-calendar -->
+
+    <!-- ================= REVISION ================= -->
+    <div class="page-view" id="page-revision" style="display:none;">
+      <div class="head-row"><h1>Revision <span class="accent">Planner</span></h1></div>
+
+      <div class="rev-stat-strip">
+        <div class="stat-card"><p class="stat-label">Total Active</p><p class="stat-num" id="revStatTotal">0</p></div>
+        <div class="stat-card red"><p class="stat-label">Overdue</p><p class="stat-num" id="revStatOverdue">0</p></div>
+        <div class="stat-card amber"><p class="stat-label">Due Today</p><p class="stat-num" id="revStatDueToday">0</p></div>
+        <div class="stat-card green"><p class="stat-label">Completed</p><p class="stat-num" id="revStatCompleted">0</p></div>
+      </div>
+
+      <div class="grid">
+        <div class="col">
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Add Topic</p></div>
+            <form id="topicForm">
+              <div class="field" style="margin-bottom:10px;"><label>Subject</label>
+                <select id="topicSubject"><option>Physics</option><option>Chemistry</option><option>Maths</option></select>
+              </div>
+              <div class="field" style="margin-bottom:10px;"><label>Topic</label><input id="topicName" type="text" placeholder="e.g. Rotational Motion" required></div>
+              <button class="btn-submit" type="submit">Schedule Revision (Day 1)</button>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Subject Mastery</p></div>
+            <div id="subjectProgress"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Revision History</p></div>
+            <div class="queue-list" id="historyList"></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Due Now</p></div>
+            <div class="queue-list" id="dueList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Upcoming</p></div>
+            <div class="queue-list" id="upcomingList"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-revision -->
+
+    <!-- ================= SYLLABUS ================= -->
+    <div class="page-view" id="page-syllabus" style="display:none;">
+      <div class="head-row"><h1>Syllabus <span class="accent">Tracker</span></h1></div>
+      <div class="stat-strip syl-stat-strip">
+        <div class="stat-card" style="border-bottom-color:#FBBF24;"><p class="stat-label" style="color:#FBBF24;">Physics</p><p class="stat-num" id="sylStatPhysics">0/0</p></div>
+        <div class="stat-card" style="border-bottom-color:#60A5FA;"><p class="stat-label" style="color:#60A5FA;">Chemistry</p><p class="stat-num" id="sylStatChemistry">0/0</p></div>
+        <div class="stat-card" style="border-bottom-color:#A78BFA;"><p class="stat-label" style="color:#A78BFA;">Maths</p><p class="stat-num" id="sylStatMaths">0/0</p></div>
+      </div>
+      <div class="panel">
+        <div class="syl-subject-tabs" id="sylTabs">
+          <button class="active" data-subject="Physics"><span class="sdot" style="background:#FBBF24;"></span>Physics</button>
+          <button data-subject="Chemistry"><span class="sdot" style="background:#60A5FA;"></span>Chemistry</button>
+          <button data-subject="Maths"><span class="sdot" style="background:#A78BFA;"></span>Maths</button>
+        </div>
+        <div class="syl-toolbar">
+          <input type="text" placeholder="Search chapters…" oninput="Syllabus.setSearch(this.value)">
+          <button class="pill-btn primary" onclick="Syllabus.addChapter(Syllabus.subject)">+ Add Chapter</button>
+        </div>
+        <div id="chapterList"></div>
+      </div>
+    </div><!-- /page-syllabus -->
+
+    <!-- ================= POMODORO ================= -->
+    <div class="page-view" id="page-pomodoro" style="display:none;">
+      <div class="head-row"><h1>Pomodoro <span class="accent">Timer</span></h1></div>
+      <div class="panel" style="max-width:420px;margin:0 auto;">
+        <div class="pomo-wrap">
+          <div class="pomo-ring">
+            <svg width="220" height="220" viewBox="0 0 220 220">
+              <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10"/>
+              <circle id="pomoRingFill" cx="110" cy="110" r="100" fill="none" stroke="#7C5CFF" stroke-width="10" stroke-linecap="round" transform="rotate(-90 110 110)"/>
+            </svg>
+            <div class="pomo-time">
+              <div class="t" id="pomoTimeText">25:00</div>
+              <div class="m" id="pomoModeText">Focus</div>
+            </div>
+          </div>
+          <div class="pomo-controls">
+            <button class="pomo-btn" onclick="Pomodoro.reset()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+            <button class="pomo-btn main" onclick="Pomodoro.toggle()"><span id="pomoMainIcon"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></button>
+            <button class="pomo-btn" data-tip="Study stats" onclick="App.setPage('gamification')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 5-8"/></svg>
+            </button>
+            <button class="pomo-btn pomo-sound-toggle" data-tip="Toggle chime" onclick="AppSettings.toggleSound()">
+              <svg class="ico-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M18.5 5.5a9 9 0 010 13"/></svg>
+              <svg class="ico-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>
+            </button>
+          </div>
+          <div class="pomo-modes">
+            <button class="active" data-mode="focus25" onclick="Pomodoro.setMode('focus25')">25 / 5</button>
+            <button data-mode="focus50" onclick="Pomodoro.setMode('focus50')">50 / 10</button>
+            <button data-mode="custom" onclick="Pomodoro.setMode('custom')">Custom</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-pomodoro -->
+
+    <!-- ================= NOTES ================= -->
+    <div class="page-view" id="page-notes" style="display:none;">
+      <div class="head-row"><h1>Quick <span class="accent">Notes</span></h1></div>
+      <div class="notes-toolbar">
+        <input type="text" placeholder="Search notes…" oninput="Notes.setFilter(this.value)" style="max-width:260px;">
+        <button class="pill-btn primary" onclick="Notes.add()">+ Add Note</button>
+      </div>
+      <div class="notes-masonry" id="notesGrid"></div>
+    </div><!-- /page-notes -->
+
+    <!-- ================= GOALS ================= -->
+    <div class="page-view" id="page-goals" style="display:none;">
+      <div class="head-row"><h1>Study <span class="accent">Goals</span></h1></div>
+      <div class="goal-ring-row" id="goalsBox"></div>
+    </div><!-- /page-goals -->
+
+    <!-- ================= GAMIFICATION / ANALYTICS ================= -->
+    <div class="page-view" id="page-gamification" style="display:none;">
+      <div class="head-row"><h1>Your <span class="accent">Progress</span></h1></div>
+      <div class="grid">
+        <div class="col">
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Level &amp; Streak</p></div>
+            <div class="xp-bar-wrap">
+              <div class="xp-ring">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="#7C5CFF" stroke-width="4" stroke-linecap="round" transform="rotate(-90 26 26)"/>
+                </svg>
+              </div>
+              <div><div class="streak-flame">🔥 <span id="streakNum2">0</span> day streak</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Badges</p></div>
+            <div class="badge-grid" id="badgeGrid"></div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="panel">
+            <div class="panel-head"><p class="panel-title">Study Heatmap</p><p class="panel-sub">Last 26 weeks</p></div>
+            <div class="heatmap" id="heatmapGrid"></div>
+            <div class="heat-legend">Less <span style="background:rgba(255,255,255,0.06)"></span><span style="background:rgba(108,99,255,0.25)"></span><span style="background:rgba(108,99,255,0.5)"></span><span style="background:rgba(108,99,255,0.75)"></span><span style="background:rgba(108,99,255,1)"></span> More</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-gamification -->
+
+    <!-- ================= SETTINGS ================= -->
+    <div class="page-view" id="page-settings" style="display:none;">
+      <div class="head-row"><h1>Settings</h1></div>
+      <div class="settings-grid">
+        <div class="panel">
+          <div class="panel-head"><p class="panel-title">Appearance</p></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Light mode</div><div class="setting-desc">Switch between dark and light theme</div></div>
+            <div class="switch" id="themeSwitch" onclick="AppSettings.toggleTheme()"><div class="knob"></div></div>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Accent color</div><div class="setting-desc">Primary brand color</div></div>
+            <div class="accent-dots">
+              <div class="accent-dot active" data-color="#6C63FF" style="background:#6C63FF;" onclick="AppSettings.setAccent('#6C63FF')"></div>
+              <div class="accent-dot" data-color="#8B5CF6" style="background:#8B5CF6;" onclick="AppSettings.setAccent('#8B5CF6')"></div>
+              <div class="accent-dot" data-color="#34D399" style="background:#34D399;" onclick="AppSettings.setAccent('#34D399')"></div>
+              <div class="accent-dot" data-color="#F87171" style="background:#F87171;" onclick="AppSettings.setAccent('#F87171')"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Notifications</div><div class="setting-desc">Revision & task reminders</div></div>
+            <div class="switch on" id="notifSwitch" onclick="AppSettings.toggleNotifications()"><div class="knob"></div></div>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Pomodoro sound</div><div class="setting-desc">Chime when a focus or break session ends</div></div>
+            <div class="switch on" id="soundSwitch" onclick="AppSettings.toggleSound()"><div class="knob"></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><p class="panel-title">Data</p></div>
+          <div class="setting-row">
+            <div><div class="setting-label">Export backup</div><div class="setting-desc">Download all data as JSON</div></div>
+            <button class="pill-btn" onclick="Storage.downloadBackup()">Export</button>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Import backup</div><div class="setting-desc">Restore from a JSON file</div></div>
+            <label class="pill-btn" style="cursor:pointer;">Import<input type="file" accept=".json" style="display:none;" onchange="App.importFile(this)"></label>
+          </div>
+          <div class="setting-row">
+            <div><div class="setting-label">Reset all data</div><div class="setting-desc">Clears everything on this device</div></div>
+            <button class="pill-btn" style="color:var(--red);" onclick="App.resetData()">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /page-settings -->
+
+  </div><!-- /wrap -->
+</div><!-- /app -->
+
+<!-- ================= FAB ================= -->
+<div class="fab-menu" id="fabMenu">
+  <button onclick="App.setPage('dashboard');document.getElementById('todaySchedulePanel').scrollIntoView({behavior:'smooth',block:'start'});Utils.toast('Log or plan an objective below','info')">📝 Log Session</button>
+  <button onclick="App.setPage('revision')">🧠 Add Revision Topic</button>
+  <button onclick="Notes.add();App.setPage('notes')">🗒️ Quick Note</button>
+  <button onclick="App.setPage('pomodoro')">🍅 Start Pomodoro</button>
+</div>
+<button class="fab" onclick="App.toggleFab()">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- ================= TOASTS ================= -->
+<div id="toastStack"></div>
+
+<!-- ================= NOTES: shared attachment file input ================= -->
+<input type="file" id="noteFileInput" style="display:none" onchange="Notes.onFileInputChange(event)"
+  accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf">
+
+<!-- ================= NOTES: attachment lightbox ================= -->
+<div class="modal-overlay lightbox-overlay" id="attachmentLightbox" onclick="if(event.target===this) Notes.closeLightbox()">
+  <div class="lightbox-box">
+    <div class="lightbox-head">
+      <span id="lightboxName" class="lightbox-name"></span>
+      <div class="lightbox-head-actions">
+        <a id="lightboxDownload" class="icon-btn" download data-tip="Download">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        </a>
+        <button class="icon-btn" onclick="Notes.closeLightbox()" data-tip="Close">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <img id="lightboxImg" src="" alt="">
+  </div>
+</div>
+
+<!-- ================= AUTH MODAL ================= -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="auth-modal-logo"><div class="brand-icon" style="width:52px;height:52px;border-radius:16px;margin:0 auto 14px;"><img src="logo-mark.png" alt="UQTxNova" class="brand-logo" style="width:40px;height:40px;"></div></div>
+    <h3>Welcome to UQTxNova</h3>
+    <p>Sign in to sync your progress across devices, or continue as guest.</p>
+    <button class="oauth-btn" onclick="Auth.signInGoogle()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.67-2.25 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.09A6.6 6.6 0 015.5 12c0-.73.12-1.43.34-2.09V7.06H2.18A11 11 0 001 12c0 1.77.43 3.45 1.18 4.94z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 00-9.82 6.06l3.66 2.85C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+      Continue with Google
+    </button>
+    <div class="divider-or">or use email</div>
+    <div class="field" style="margin-bottom:8px;"><input type="email" id="authEmail" placeholder="Email"></div>
+    <div class="field" style="margin-bottom:8px;"><input type="password" id="authPassword" placeholder="Password"></div>
+    <div class="modal-actions">
+      <button class="pill-btn" onclick="Auth.signInEmail(document.getElementById('authEmail').value, document.getElementById('authPassword').value)">Sign In</button>
+      <button class="pill-btn primary" onclick="Auth.signUpEmail(document.getElementById('authEmail').value, document.getElementById('authPassword').value)">Sign Up</button>
+    </div>
+    <button class="modal-link" onclick="Auth.continueAsGuest()">Continue as guest →</button>
+  </div>
+</div>
+
+<!-- ================= MIGRATE MODAL ================= -->
+<div class="modal-overlay" id="migrateModal">
+  <div class="modal">
+    <h3>Sync your local data?</h3>
+    <p>We found study data saved on this device from guest mode. Would you like to upload it to your account?</p>
+    <div class="modal-actions">
+      <button class="pill-btn" onclick="CloudSync.closeMigratePrompt(false)">Not now</button>
+      <button class="pill-btn primary" onclick="CloudSync.closeMigratePrompt(true)">Sync it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EDIT TASK MODAL ================= -->
+<div class="modal-overlay" id="editTaskModal">
+  <div class="modal">
+    <h3>Edit Objective</h3>
+    <p>Update the details — Objectives stays in sync automatically.</p>
+    <input type="hidden" id="editTaskId">
+    <div class="field" style="margin-bottom:10px;"><label>Description</label><input id="editTitle" type="text" placeholder="e.g. Rotational Motion — numericals"></div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Subject</label>
+        <select id="editSubject"><option>Physics</option><option>Chemistry</option><option>Maths</option><option>General</option></select>
+      </div>
+      <div class="field"><label>Type</label>
+        <div class="type-dropdown" id="editTypeDropdown">
+          <button type="button" class="type-dropdown-trigger" onclick="App.toggleTypeDropdown('editTypeDropdown')">
+            <span class="type-dropdown-value" id="editTypeValue">Select type</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="type-dropdown-panel">
+            <label class="type-dropdown-opt"><span class="type-opt-label">Lecture</span><input type="checkbox" class="type-opt-input" data-type="Lecture" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">Module</span><input type="checkbox" class="type-opt-input" data-type="Module" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">DPP</span><input type="checkbox" class="type-opt-input" data-type="DPP" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">Revision</span><input type="checkbox" class="type-opt-input" data-type="Revision" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">PYQ</span><input type="checkbox" class="type-opt-input" data-type="PYQ" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">HW</span><input type="checkbox" class="type-opt-input" data-type="HW" onchange="App.onTypeOptionChange('editTypeDropdown')"><span class="type-opt-tick"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Duration</label>
+        <div class="duration-input">
+          <input id="editDurationHrs" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Hours"><span class="duration-unit">hr</span>
+          <input id="editDurationMins" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Minutes"><span class="duration-unit">min</span>
+        </div>
+      </div>
+      <div class="field"><label>Problems Solved</label><input id="editProblems" type="number" min="0"></div>
+    </div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Priority</label>
+        <select id="editPriority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select>
+      </div>
+      <div class="field"><label>Date</label><input id="editDate" type="date"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="pill-btn" onclick="App.closeEditTask()">Cancel</button>
+      <button class="pill-btn primary" onclick="App.saveEditTask()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EDIT OBJECTIVE (QUEUE ENTRY) MODAL ================= -->
+<div class="modal-overlay" id="editEntryModal">
+  <div class="modal">
+    <h3>Edit Objective</h3>
+    <p>Update this logged objective — Objectives stays in sync automatically.</p>
+    <input type="hidden" id="editEntryTs">
+    <div class="field" style="margin-bottom:10px;"><label>Title</label><input id="editEntryDesc" type="text" placeholder="e.g. Rotational Motion — numericals"></div>
+    <div class="field" style="margin-bottom:10px;"><label>Description</label><textarea id="editEntryNotes" rows="2" placeholder="Optional notes or details…"></textarea></div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Subject</label>
+        <select id="editEntrySubject"><option>Physics</option><option>Chemistry</option><option>Maths</option><option>General</option></select>
+      </div>
+      <div class="field"><label>Type</label>
+        <div class="type-dropdown" id="editEntryTypeDropdown">
+          <button type="button" class="type-dropdown-trigger" onclick="App.toggleTypeDropdown('editEntryTypeDropdown')">
+            <span class="type-dropdown-value" id="editEntryTypeValue">Select type</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="type-dropdown-panel">
+            <label class="type-dropdown-opt"><span class="type-opt-label">Lecture</span><input type="checkbox" class="type-opt-input" data-type="Lecture" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">Module</span><input type="checkbox" class="type-opt-input" data-type="Module" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">DPP</span><input type="checkbox" class="type-opt-input" data-type="DPP" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">Revision</span><input type="checkbox" class="type-opt-input" data-type="Revision" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">PYQ</span><input type="checkbox" class="type-opt-input" data-type="PYQ" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+            <label class="type-dropdown-opt"><span class="type-opt-label">HW</span><input type="checkbox" class="type-opt-input" data-type="HW" onchange="App.onTypeOptionChange('editEntryTypeDropdown')"><span class="type-opt-tick"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Duration</label>
+        <div class="duration-input">
+          <input id="editEntryDurationHrs" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Hours"><span class="duration-unit">hr</span>
+          <input id="editEntryDurationMins" type="number" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Minutes"><span class="duration-unit">min</span>
+        </div>
+      </div>
+      <div class="field"><label>Progress (Problems)</label><input id="editEntryProblems" type="number" min="0"></div>
+    </div>
+    <div class="field-row" style="margin-bottom:10px;">
+      <div class="field"><label>Priority</label>
+        <select id="editEntryPriority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select>
+      </div>
+      <div class="field"><label>Date</label><input id="editEntryDate" type="date"></div>
+    </div>
+    <div class="setting-row" style="padding:6px 0 0;border-bottom:none;">
+      <div><div class="setting-label">Completed</div><div class="setting-desc">Unmark if this was only planned, not finished</div></div>
+      <input type="checkbox" id="editEntryCompleted" style="width:18px;height:18px;">
+    </div>
+    <div class="modal-actions">
+      <button class="pill-btn" onclick="App.closeEditEntry()">Cancel</button>
+      <button class="pill-btn primary" onclick="App.saveEditEntry()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="utils.js"></script>
+<script src="storage.js"></script>
+<script src="attachments.js"></script>
+<script src="firebase.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="revision.js"></script>
+<script src="syllabus.js"></script>
+<script src="calendar.js"></script>
+<script src="charts.js"></script>
+<script src="reminders.js"></script>
+<script>
+  if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
