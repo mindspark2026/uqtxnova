@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// TaskxNova / UQTxNova — cloud sync security rules.
+// Each signed-in user (email/password, Google, or anonymous guest) can
+// only read/write their own synced data at users/{uid}/data/{key}.
+// Nobody, including other signed-in users, can read or write another
+// user's documents, and unauthenticated requests are rejected entirely.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      match /data/{key} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+  }
+}
