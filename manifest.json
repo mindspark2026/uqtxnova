@@ -1,0 +1,134 @@
+{
+  "id": "/uqtxnova/",
+  "name": "UQTxNova",
+  "short_name": "UQTxNova",
+  "description": "Study productivity dashboard for JEE preparation — daily schedule, syllabus tracker, spaced-repetition revision, Pomodoro and stopwatch, calendar planning and progress analytics.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#07100F",
+  "theme_color": "#07100F",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/desktop-dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard — today's stats, schedule, distribution and weekly performance"
+    },
+    {
+      "src": "screenshots/desktop-calendar.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Calendar — plan and review each day"
+    },
+    {
+      "src": "screenshots/desktop-revision.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Revision — spaced-repetition topics due today"
+    },
+    {
+      "src": "screenshots/mobile-dashboard.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard on mobile"
+    },
+    {
+      "src": "screenshots/mobile-calendar.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Calendar on mobile"
+    },
+    {
+      "src": "screenshots/mobile-syllabus.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Syllabus tracker on mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calendar",
+      "short_name": "Calendar",
+      "description": "Open the study calendar",
+      "url": "./?page=calendar",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Revision",
+      "short_name": "Revision",
+      "description": "Today's revision topics",
+      "url": "./?page=revision",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Pomodoro & Stopwatch",
+      "short_name": "Focus timer",
+      "description": "Start a focus session",
+      "url": "./?page=pomodoro",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
